@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Events - College Organizer</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>College Events</h1>
+      <nav>
+        <a href="index.html">Home</a> |
+        <a href="admin-login.html">Admin</a>
+      </nav>
+    </header>
+
+    <section id="eventsSection">
+      <h2>Upcoming Events</h2>
+      <div id="eventsList">Loading events...</div>
+    </section>
+  </div>
+
+  <script>
+    async function loadEvents(){
+      try{
+        const events = await apiGet('/api/events');
+        const list = document.getElementById('eventsList');
+        list.innerHTML = '';
+        if (!events.length) { list.innerHTML = '<p>No events right now.</p>'; return; }
+        events.forEach(e => {
+          const div = document.createElement('div');
+          div.className = 'event-card';
+          div.innerHTML = `
+            <div class="event-title">${e.event_name}</div>
+            <div class="small">${e.event_date} &nbsp;|&nbsp; ${e.event_time} &nbsp;|&nbsp; ${e.venue}</div>
+            <p>${(e.description || '').slice(0,200)}${(e.description && e.description.length>200)?'...':''}</p>
+            <a href="event.html?id=${e.event_id}"><button>View & Register</button></a>
+          `;
+          list.appendChild(div);
+        });
+      } catch(err){
+        document.getElementById('eventsList').innerHTML = '<div class="alert error">Failed to load events</div>';
+        console.error(err);
+      }
+    }
+    window.onload = loadEvents;
+  </script>
+</body>
+</html>

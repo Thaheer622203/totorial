@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Event Details</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html">← Back to Events</a>
+    <div id="eventBox">Loading event...</div>
+  </div>
+
+  <script>
+    function getQueryParam(name){
+      return new URLSearchParams(location.search).get(name);
+    }
+
+    async function loadEvent(){
+      const id = getQueryParam('id');
+      if(!id){ document.getElementById('eventBox').innerHTML = '<p>Invalid event ID</p>'; return; }
+      try{
+        const e = await apiGet(`/api/event/${id}`);
+        const box = document.getElementById('eventBox');
+        box.innerHTML = `
+          <h1>${e.event_name}</h1>
+          <div class="small">${e.event_date} | ${e.event_time} | ${e.venue}</div>
+          <p>${e.description || ''}</p>
+          <a href="register.html?event_id=${e.event_id}"><button>Register For This Event</button></a>
+        `;
+      } catch(err){
+        document.getElementById('eventBox').innerHTML = '<div class="alert error">Could not load event</div>';
+        console.error(err);
+      }
+    }
+    window.onload = loadEvent;
+  </script>
+</body>
+</html>

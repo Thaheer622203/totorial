@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Registrations</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <div class="container">
+    <a href="admin-dashboard.html">← Back</a>
+    <h2>Registrations</h2>
+
+    <div>
+      <label>Event</label>
+      <select id="eventSelect"><option value="">--All Events--</option></select>
+      <button id="loadBtn">Load</button>
+      <button id="downloadBtn" class="secondary">Download CSV</button>
+    </div>
+
+    <table class="table" id="tbl">
+      <thead><tr><th>#</th><th>Event</th><th>Name</th><th>Roll</th><th>Dept</th><th>Email</th><th>Phone</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    async function loadEventsToSelect(){
+      const events = await apiGet('/api/events');
+      const sel = document.getElementById('eventSelect');
+      events.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.event_id;
+        opt.textContent = `${e.event_name} (${e.event_date})`;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function loadRegs(){
+      const eventId = document.getElementById('eventSelect').value;
+      const params = eventId ? `?event_id=${eventId}` : '';
+      const regs = await apiGet('/api/admin/registrations' + params);
+      const tbody = document.querySelector('#tbl tbody');
+      tbody.innerHTML = '';
+      regs.forEach((r,i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${r.event_name}</td><td>${r.student_name}</td><td>${r.roll_no}</td><td>${r.dept}</td><td>${r.email}</td><td>${r.phone}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('loadBtn').addEventListener('click', loadRegs);
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      const eventId = document.getElementById('eventSelect').value;
+      const url = '/api/admin/registrations/export' + (eventId ? `?event_id=${eventId}` : '');
+      // open download (backend should respond with CSV file)
+      window.location = url;
+    });
+
+    window.onload = async () => {
+      await loadEventsToSelect();
+      await loadRegs();
+    };
+  </script>
+</body>
+</html>
